@@ -30,10 +30,13 @@ the player's dot will also despawn and the player becomes invisible until they m
 # multiple obstacles at the same time
 
 class Player:
+    # Player position
     x = 2
-    y = 4
+    y = 4 #constant
 
+    
     def __init__(self):
+        # Draw player when initialized
         display.set_pixel(self.x, self.y ,9)
 
     def move(self, movement):
@@ -50,60 +53,77 @@ class Player:
         else:
             self.x += movement
 
-        # Light LED at new player position
+        # Light up LED at new player position
         display.set_pixel(self.x, self.y, 9)
 
         
 
 class Obstacle:
+    # Obstacle position
     x = 0
     y = 0
 
     def __init__(self):
+        # Select a random column for obstacle
         self.x = random.randint(0, 4)
+        # Draw obstacle when initialized
         display.set_pixel(self.x, self.y, 9)
 
     def move(self):
+        # Extinguish LED at current position
         display.set_pixel(self.x, self.y, 0)
-        
+
+        # If the obstacle has not reached the bottom row
         if self.y < 4:
+            # Move down by one
             self.y += 1
         else:
+            # If the obstacle is at the bottom, return False
             return False
 
+        # Light up LED at new position
         display.set_pixel(self.x, self.y, 9)
+        # Obstacle could and has moved, return True
         return True
 
         
 # Code in a 'while True:' loop repeats forever
 
 def main():
+    # Initialize player and Obstacle objects
     player = Player()
     obstacle = Obstacle()
+
+    # Count of loop cycles
     cycle = 0
-    
+
+    score = 0
+
+    # Main gameplay loop
     while True:
-        
+        # Move player if button was pressed
+        # -1 move to the left
+        # +1 move to the right
         if button_a.was_pressed():
             player.move(-1)
         if button_b.was_pressed():
             player.move(+1)
 
+        # When loop has executed 50 times, move obstacle
         if cycle >= 50:
+            # If obstacle can't move, initialize new obstacle
             if obstacle.move() == False:
                 obstacle = Obstacle()
+                score += 1
             cycle = 0
         else:
             cycle += 1
 
+        if collision(player, obstacle):
+            gameOver(score)
 
+        # Sleep for 10ms
         sleep(10)
-
-    
-def draw(obstacle):
-    clearDisplay()
-    # Draw obstacle
-    display.set_pixel(obstacle.x, obstacle.y, 9)
 
 
 # Clear entire display
@@ -113,6 +133,15 @@ def clearDisplay():
                        '00000:'
                        '00000:'
                        '00000:'))
+
+def collision(player, obstacle):
+    if player.x == obstacle.x and player.y == obstacle.y:
+        return True
+    else:
+        return False
+
+def gameOver(score):
+    display.scroll('Score: ' + str(score), delay=100, loop=True)
 
 
 main()
